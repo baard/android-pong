@@ -2,4 +2,5 @@
 <resources>
     <string name="hello">Hello World, Pong</string>
     <string name="app_name">Pong</string>
+<string name="menu_new_game">New game</string>
 </resources>
