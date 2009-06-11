@@ -1,7 +1,5 @@
 package no.bouvet.android.pong;
 
-import no.bouvet.android.pong.PongView.PongThread;
-
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -9,11 +7,7 @@ import android.view.MenuItem;
 import android.view.Window;
 
 public class Pong extends Activity {
-    
-    private PongThread mPongThread;
-
     private PongView mPongView;
-    
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -24,37 +18,33 @@ public class Pong extends Activity {
     
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        mPongThread.doStart();
+        // only one menu-item
+        mPongView.doStart();
         return true;
     }
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-
         setContentView(R.layout.main);
 
-        // get handles to the LunarView from XML, and its LunarThread
         mPongView = (PongView) findViewById(R.id.pong);
-        mPongThread = mPongView.getThread();
         
         if (savedInstanceState != null) {
-            // we are being restored: resume a previous game
-            mPongThread.restoreState(savedInstanceState);
+            mPongView.restoreState(savedInstanceState);
         }
     }
     
     @Override
     protected void onPause() {
         super.onPause();
-        mPongView.getThread().pause(); // pause game when Activity pauses
+        mPongView.pause();
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        mPongThread.saveState(outState);
+        mPongView.saveState(outState);
     }
 }
