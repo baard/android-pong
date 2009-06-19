@@ -1,0 +1,8 @@
+Styre paddle på Magic (done)
+Scoreboard
+Tåle landscape/portrait-switch
+
+Notiser:
+org.apache.httpclient for connect to client (requires network access)
+org.json for json-parsing
+SensorManager for aksellerometer
