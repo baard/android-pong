@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package no.bouvet.android.pong;
+package no.bouvet.android.profiler;
 
 import android.os.SystemClock;
 

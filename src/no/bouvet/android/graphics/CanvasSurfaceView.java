@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-package no.bouvet.android.pong;
+package no.bouvet.android.graphics;
 
+
+import no.bouvet.android.profiler.ProfileLogger;
+import no.bouvet.android.profiler.ProfileRecorder;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
@@ -237,7 +240,7 @@ public class CanvasSurfaceView extends SurfaceView {
                 profiler.stop(ProfileRecorder.PROFILE_FRAME);
                 profiler.endFrame();
                 
-                profileLogger.logIfNeccessary();
+                profileLogger.allowLog();
             }
         }
 

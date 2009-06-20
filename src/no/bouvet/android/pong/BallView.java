@@ -5,25 +5,26 @@ import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 
-public class BallView extends View {
-    final PongGame game;
-    private Drawable mBall;
-    private int mBallWidth;
-    private int mBallHeight;
-    public BallView(Context context, PongGame game) {
+class BallView extends View {
+    private final PongGame game;
+    private final Drawable mBall;
+    private final int mBallWidth;
+    private final int mBallHeight;
+
+    BallView(Context context, PongGame game) {
         super(context);
         this.game = game;
         mBall = context.getResources().getDrawable(R.drawable.ball);
         mBallHeight = mBall.getIntrinsicHeight();
         mBallWidth = mBall.getIntrinsicWidth();
     }
-    
+
     @Override
     protected void onDraw(Canvas canvas) {
-        int yBallTop = canvas.getHeight() - ((int) game.getY() + mBallHeight / 2);
-        int xBallLeft = (int) game.getX() - mBallWidth / 2;
+        int ballTop = canvas.getHeight() - game.getBallVertical();
+        int ballLeft = (int) game.getBallHorizontal() - mBallWidth / 2;
         canvas.save();
-        mBall.setBounds(xBallLeft, yBallTop, xBallLeft + mBallWidth, yBallTop + mBallHeight);
+        mBall.setBounds(ballLeft, ballTop, ballLeft + mBallWidth / 2, ballTop + mBallHeight / 2);
         mBall.draw(canvas);
         canvas.restore();
     }

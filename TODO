@@ -1,6 +1,8 @@
 Styre paddle på Magic (done)
 Scoreboard
 Tåle landscape/portrait-switch
+GPS-movement
+Cheat-mode
 
 Notiser:
 org.apache.httpclient for connect to client (requires network access)
