@@ -4,7 +4,7 @@ Tåle landscape/portrait-switch
 GPS-movement
 Cheat-mode
 
-Notiser:
+Tips:
 org.apache.httpclient for connect to client (requires network access)
 org.json for json-parsing
 SensorManager for aksellerometer

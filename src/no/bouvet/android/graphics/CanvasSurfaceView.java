@@ -240,6 +240,7 @@ public class CanvasSurfaceView extends SurfaceView {
                 profiler.stop(ProfileRecorder.PROFILE_FRAME);
                 profiler.endFrame();
                 
+                // not in original source
                 profileLogger.allowLog();
             }
         }
