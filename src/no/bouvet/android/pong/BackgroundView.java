@@ -17,10 +17,7 @@ class BackgroundView extends View {
     }
 
     void sizeChanged(int width, int height) {
-        if (width > 1 && height > 1) {
-            //TODO remove checks?
-            mBackgroundImage = Bitmap.createScaledBitmap(mBackgroundImage, width, height, true);
-        }
+        mBackgroundImage = Bitmap.createScaledBitmap(mBackgroundImage, width, height, true);
     }
 
     @Override

@@ -59,19 +59,16 @@ public class CanvasSurfaceView extends SurfaceView {
     }
     
     class CanvasSurfaceCallback implements Callback {
-        @Override
         public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
             // Surface size or format has changed. This should not happen in this
             // example.
             mCanvasThread.onWindowResize(width, height);
         }
 
-        @Override
         public void surfaceCreated(SurfaceHolder holder) {
             mCanvasThread.surfaceCreated();
         }
 
-        @Override
         public void surfaceDestroyed(SurfaceHolder holder) {
             // Surface will be destroyed when we return
             mCanvasThread.surfaceDestroyed();
