@@ -22,6 +22,7 @@ public class GameActivity extends Activity {
     private Court mCourt;
     private TextView mScoreView;
     private CanvasSurfaceView mCanvasView;
+    private RESTClient restClient;
     
     class ScoreUpdatedHandler extends Handler {
         @Override
@@ -53,7 +54,19 @@ public class GameActivity extends Activity {
             // do nothing
         }
     }
-
+    
+    @Override
+    protected void onPause() {
+        super.onPause();
+        restClient.stopThread();
+    }
+    
+    @Override
+    protected void onResume() {
+        super.onResume();
+        restClient.startThread();
+    }
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +74,8 @@ public class GameActivity extends Activity {
         setContentView(R.layout.game);
         
         mCourt = new Court(new ScoreUpdatedHandler());
+        restClient = new RESTClient(mCourt);
+        mCourt.setCourtHandler(restClient);
         mScoreView = (TextView) findViewById(R.id.score);
 
         mCanvasView = (CanvasSurfaceView) findViewById(R.id.surface);

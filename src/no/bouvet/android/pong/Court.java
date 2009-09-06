@@ -25,7 +25,7 @@ class Court {
     private final Handler mHandler;
     
     public Court(Handler handler) {
-        dropNewBall();
+        //dropRandomNewBall();
         this.mHandler = handler;
     }
     
@@ -95,7 +95,7 @@ class Court {
     private void handleFloorCollision(float newBallY) {
         if (newBallY < 0) {
             setScore(score - 1);
-            dropNewBall();
+            courtHandler.ballLost();
         }
     }
 
@@ -105,11 +105,21 @@ class Court {
         mHandler.sendMessage(msg);
     }
 
-    private void dropNewBall() {
+    public void dropRandomNewBall() {
+        float dx = (float) (Math.random() - 0.5f);
+        float dy = -1;
+        dropBall(0.5f, dx, dy);
+    }
+    
+    public void resetPaddle() {
         mPaddleLeft = mWidth / 2;
-        mBallDX = DEFAULT_BALL_SPEED * (float) (Math.random() - 0.5f);
-        mBallDY = - DEFAULT_BALL_SPEED;
-        mBallX = mWidth / 2;
+        mPaddleDX = 0;
+    }
+    
+    public void dropBall(float x, float dx, float dy) {
+        mBallDX = DEFAULT_BALL_SPEED * dx;
+        mBallDY = DEFAULT_BALL_SPEED * - dy;
+        mBallX = mWidth * x;
         mBallY = mHeight;
         mPaddleDX = 0;
     }
@@ -118,7 +128,7 @@ class Court {
         if (newBallY > mHeight) {
             setScore(score + 1);
             mBallY = mHeight;
-            flipBallY();
+            courtHandler.ballToOpponent(mBallX / mWidth, mBallDX / DEFAULT_BALL_SPEED, mBallDY / DEFAULT_BALL_SPEED);
         }
     }
 
@@ -147,7 +157,7 @@ class Court {
         }
     }
 
-    private void flipBallY() {
+    public void flipBallY() {
         mBallDY = -mBallDY;
     }
 
@@ -170,7 +180,7 @@ class Court {
     void sizeChanged(int width, int height) {
         mWidth = width;
         mHeight = height;
-        dropNewBall();
+        //dropRandomNewBall();
     }
 
     void setPaddleWidth(int barWidth) {
@@ -183,5 +193,18 @@ class Court {
 
     int getScore() {
         return score;
+    }
+    
+    private CourtEventHandler courtHandler;
+    
+    public void setCourtHandler(CourtEventHandler courtHandler) {
+        this.courtHandler = courtHandler;
+    }
+
+    public void stopBall() {
+        mBallDX = 0.0f;
+        mBallDY = 0.0f;
+        mBallX = 0.0f;
+        mBallY = 0.0f;
     }
 }
