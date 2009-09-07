@@ -103,12 +103,14 @@ public class GameActivity extends Activity {
         mCanvasView.setOnTouchListener(new GameTouchListener());
         mCanvasView.setRenderer(new GameRenderer(this));
         mCanvasView.setEvent(new GameUpdater());
+        mCanvasView.setKeepScreenOn(true);
         new TiltListener(this);
     }
     
-    boolean keepPlayerAlive = true;
+    boolean keepPlayerAlive;
 
     private void startKeepPlayerAlive() {
+        keepPlayerAlive = true;
         new Thread() {
             public void run() {
                 while (keepPlayerAlive) {

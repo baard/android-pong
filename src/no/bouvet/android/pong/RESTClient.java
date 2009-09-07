@@ -10,20 +10,20 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.os.Handler;
 import android.util.Log;
 
 public class RESTClient implements CourtEventHandler {
     private static final String LOG_CATEGORY = "RESTClient";
 
     final Court court;
-    // 85.19.184.33
-    //String baseUrl = "http://javazone.brylex.org/grails-server";
     final String baseUrl;
     String ballUrl;
     String myOwnerId;
@@ -48,6 +48,35 @@ public class RESTClient implements CourtEventHandler {
         // TODO notify server about lost ball
         // cheating..
         court.flipBallY();
+        sendScore(false);
+    }
+
+    private void sendScore(final boolean b) {
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    // notify server of ball passed back
+                    String urlString = baseUrl + "/score";
+                    Log.i(LOG_CATEGORY, "POST " + urlString);
+                    HttpPost put = new HttpPost(urlString);
+                    put.setHeader("Connection", "close");
+                    String params = "player.id=" + myOwnerId + "&hit=" + b + "&ball.id=" +  ballId;
+                    BasicHttpEntity entity = new BasicHttpEntity();
+                    entity.setContent(new ByteArrayInputStream(params.getBytes()));
+                    entity.setContentType("application/x-www-form-urlencoded");
+                    put.setEntity(entity);
+                    HttpClient httpClient = new DefaultHttpClient();
+                    HttpResponse response = httpClient.execute(put);
+                    StatusLine line = response.getStatusLine();
+                    if (line.getStatusCode() != 200) {
+                        throw new Exception("not 200, but was: " + line.getStatusCode());
+                    }
+                } catch (Exception e) {
+                    Log.w(LOG_CATEGORY, "ex: " + e.getMessage());
+                }
+                startThread();
+            }
+        }).start();
     }
 
     void stopThread() {
@@ -63,6 +92,11 @@ public class RESTClient implements CourtEventHandler {
     
     public void ballToOpponent(final float x, final float dx, final float dy) {
         court.stopBall();
+        updateBall(x, dx, dy);
+        sendScore(true);
+    }
+
+    private void updateBall(final float x, final float dx, final float dy) {
         new Thread(new Runnable() {
             public void run() {
                 try {
