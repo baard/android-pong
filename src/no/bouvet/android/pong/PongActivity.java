@@ -5,17 +5,16 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 public class PongActivity extends Activity {
     private static final int MENU_NEW_GAME = 0;
-    private static final int MENU_JOIN_GAME = 1;
+    private static final int MENU_CONFIG = 2;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
-        menu.add(0, MENU_NEW_GAME, 0, R.string.menu_new_game).setIcon(android.R.drawable.ic_media_play);
-        menu.add(0, MENU_JOIN_GAME, 0, R.string.menu_join_game).setIcon(android.R.drawable.ic_media_ff);
+        menu.add(0, MENU_NEW_GAME, 0, "Join game").setIcon(android.R.drawable.ic_media_play);
+        menu.add(0, MENU_CONFIG, 0, "Preferences").setIcon(android.R.drawable.ic_menu_preferences);
         return true;
     }
 
@@ -26,8 +25,9 @@ public class PongActivity extends Activity {
             Intent game = new Intent(this, GameActivity.class);
             startActivity(game);
             return true;
-        case MENU_JOIN_GAME:
-            Toast.makeText(this, "Not implemented yet!", Toast.LENGTH_SHORT).show();
+        case MENU_CONFIG:
+            Intent intent = new Intent(this, ConfigActivity.class);
+            startActivity(intent);
             return true;
         }
         return false;

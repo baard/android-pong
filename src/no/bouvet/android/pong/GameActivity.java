@@ -5,18 +5,21 @@ import no.bouvet.android.graphics.CanvasSurfaceView.FrameRenderer;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.hardware.SensorListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnKeyListener;
 import android.view.View.OnTouchListener;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class GameActivity extends Activity {
     private Court mCourt;
@@ -59,22 +62,39 @@ public class GameActivity extends Activity {
     protected void onPause() {
         super.onPause();
         restClient.stopThread();
+        keepPlayerAlive = false;
     }
     
     @Override
     protected void onResume() {
         super.onResume();
         restClient.startThread();
+        startKeepPlayerAlive();
     }
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
         setContentView(R.layout.game);
         
         mCourt = new Court(new ScoreUpdatedHandler());
-        restClient = new RESTClient(mCourt);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String ball = prefs.getString("ballid", null);
+        if (ball == null) {
+            Toast.makeText(this, "Configure ball in preferences", Toast.LENGTH_LONG);
+            finish();
+        }
+        String serverurl = prefs.getString("serverurl", null);
+        if (serverurl == null) {
+            Toast.makeText(this, "Configure server url in preferences", Toast.LENGTH_LONG);
+            finish();
+        }
+        final String playername = prefs.getString("playername", null);
+        if (playername == null) {
+            Toast.makeText(this, "You must enter your playername in the preferences", Toast.LENGTH_LONG);
+            return;
+        }
+        restClient = new RESTClient(mCourt, serverurl, ball, playername);
         mCourt.setCourtHandler(restClient);
         mScoreView = (TextView) findViewById(R.id.score);
 
@@ -84,6 +104,23 @@ public class GameActivity extends Activity {
         mCanvasView.setRenderer(new GameRenderer(this));
         mCanvasView.setEvent(new GameUpdater());
         new TiltListener(this);
+    }
+    
+    boolean keepPlayerAlive = true;
+
+    private void startKeepPlayerAlive() {
+        new Thread() {
+            public void run() {
+                while (keepPlayerAlive) {
+                    restClient.flipPlayer();
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        return;
+                    }
+                }
+            };
+        }.start();
     }
 
     class GameTouchListener implements OnTouchListener {

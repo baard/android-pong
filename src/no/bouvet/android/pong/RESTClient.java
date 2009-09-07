@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -22,17 +23,26 @@ public class RESTClient implements CourtEventHandler {
 
     final Court court;
     // 85.19.184.33
-    String baseUrl = "http://javazone.brylex.org/grails-server";
-    String ballUrl =  baseUrl + "/superBall/%s.json";
-    String myOwnerId = "Baard";
-    String opponent = "Sharebear";
-    String ballId = "1";
+    //String baseUrl = "http://javazone.brylex.org/grails-server";
+    final String baseUrl;
+    String ballUrl;
+    String myOwnerId;
+    String ballId;
     Thread thread;
     boolean runThread;
     
-    public RESTClient(Court court) {
+    public RESTClient(Court court, String url, String ballId, String playerId) {
         this.court = court;
+        this.baseUrl = url;
+        this.ballId = ballId;
+        this.myOwnerId = playerId;
+        init();
     }
+    
+    private void init() {
+        ballUrl =  baseUrl + "/superBall/%s.json";
+    }
+
 
     public void ballLost() {
         // TODO notify server about lost ball
@@ -62,7 +72,10 @@ public class RESTClient implements CourtEventHandler {
                     HttpPut put = new HttpPut(urlString);
                     put.setHeader("Connection", "close");
                     float dx2 = -dx;
-                    String params = "id=" + ballId + "&ballOwnedBy=" + opponent + "&startsAtY=" + x + "&xVector=" + dx2 + "&yVector="
+                    JSONObject ball = getBall(ballId);
+                    JSONObject nextPlayer = ball.getJSONObject("nextPlayer");
+                    String nextPlayerId = nextPlayer.getString("id");
+                    String params = "id=" + ballId + "&currentPlayer.id=" + nextPlayerId + "&startsAtY=" + x + "&xVector=" + dx2 + "&yVector="
                             + dy;
                     BasicHttpEntity entity = new BasicHttpEntity();
                     entity.setContent(new ByteArrayInputStream(params.getBytes()));
@@ -70,7 +83,10 @@ public class RESTClient implements CourtEventHandler {
                     put.setEntity(entity);
                     HttpClient httpClient = new DefaultHttpClient();
                     HttpResponse response = httpClient.execute(put);
-                    response.getStatusLine();
+                    StatusLine line = response.getStatusLine();
+                    if (line.getStatusCode() != 200) {
+                        throw new Exception("not 200, but was: " + line.getStatusCode());
+                    }
                 } catch (Exception e) {
                     Log.w(LOG_CATEGORY, "ex: " + e.getMessage());
                 }
@@ -91,7 +107,8 @@ public class RESTClient implements CourtEventHandler {
     
     private boolean pollForBall() throws MalformedURLException, IOException, JSONException {
         JSONObject object = getBall(ballId);
-        String ownerId = object.getString("ballOwnedBy");
+        JSONObject owner = object.getJSONObject("currentPlayer");
+        String ownerId = owner.getString("id");
         if (ownerId.equals(myOwnerId)) {
             float dy = (float) object.getDouble("xVector");
             float dx = (float) object.getDouble("yVector");
@@ -108,6 +125,10 @@ public class RESTClient implements CourtEventHandler {
         HttpGet get = new HttpGet(urlString);
         HttpClient httpClient = new DefaultHttpClient();
         HttpResponse response = httpClient.execute(get);
+        StatusLine statusLine = response.getStatusLine();
+        if (statusLine.getStatusCode() != 200) {
+            throw new RuntimeException("error code != 200, was: " + statusLine.getStatusCode());
+        }
         InputStream in = response.getEntity().getContent();
         String data = slurp(in);
         return new JSONObject(data);
@@ -130,4 +151,29 @@ public class RESTClient implements CourtEventHandler {
             Log.i(LOG_CATEGORY, "thread stop requested, stopping thread!");
         }
     };
+
+    boolean flipFlop = false;
+    public void flipPlayer() {
+        try {
+            // notify server of ball passed back
+            String urlString = baseUrl + "/player";
+            Log.i(LOG_CATEGORY, "PUT " + urlString);
+            HttpPut put = new HttpPut(urlString);
+            put.setHeader("Connection", "close");
+            String params = "id=" + myOwnerId + "&currentBall.id=" + ballId + "&flipFlop=" + flipFlop;
+            flipFlop = !flipFlop;
+            BasicHttpEntity entity = new BasicHttpEntity();
+            entity.setContent(new ByteArrayInputStream(params.getBytes()));
+            entity.setContentType("application/x-www-form-urlencoded");
+            put.setEntity(entity);
+            HttpClient httpClient = new DefaultHttpClient();
+            HttpResponse response = httpClient.execute(put);
+            StatusLine line = response.getStatusLine();
+            if (line.getStatusCode() != 200) {
+                throw new Exception("not 200, but was: " + line.getStatusCode());
+            }
+        } catch (Exception e) {
+            Log.w(LOG_CATEGORY, "ex: " + e.getMessage());
+        }
+    }
 }

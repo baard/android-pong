@@ -12,6 +12,7 @@
             </intent-filter>
         </activity>
         <activity android:name="no.bouvet.android.pong.GameActivity" android:screenOrientation="portrait"/>
+        <activity android:name="no.bouvet.android.pong.ConfigActivity"/>
     </application>
 <uses-sdk android:minSdkVersion="2"></uses-sdk>
 <uses-permission android:name="android.permission.INTERNET"></uses-permission>
