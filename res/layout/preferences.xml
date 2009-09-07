@@ -2,20 +2,26 @@
 <!-- TODO i18n -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 	<PreferenceCategory
-		android:title="Settings">
+		android:title="Game settings">
+        <CheckBoxPreference android:key="play_solo"
+            android:defaultValue="true"
+            android:title="Single player mode" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="Server settings">
         <EditTextPreference
             android:key="playername"
             android:title="Player ID" 
             android:summary="ID of your registered player"/>
         <EditTextPreference
-            android:key="serverurl"
-            android:title="Pong Server" 
-            android:defaultValue="http://javazone.brylex.org/grails-server"
-            android:summary="Url to the Pong Server"/>
-        <EditTextPreference
             android:key="ballid"
             android:title="Ball to join" 
             android:defaultValue="1"
             android:summary="Be part of a SuperBall ring"/>
+        <EditTextPreference
+            android:key="serverurl"
+            android:title="Pong Server" 
+            android:defaultValue="http://javazone.brylex.org/grails-server"
+            android:summary="Url to the Pong Server"/>
 	</PreferenceCategory>
 </PreferenceScreen> 

@@ -25,7 +25,7 @@ public class GameActivity extends Activity {
     private Court mCourt;
     private TextView mScoreView;
     private CanvasSurfaceView mCanvasView;
-    private RESTClient restClient;
+    private CourtEventHandler courtHandler;
     
     class ScoreUpdatedHandler extends Handler {
         @Override
@@ -61,15 +61,13 @@ public class GameActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        restClient.stopThread();
-        keepPlayerAlive = false;
+        courtHandler.stopThread();
     }
     
     @Override
     protected void onResume() {
         super.onResume();
-        restClient.startThread();
-        startKeepPlayerAlive();
+        courtHandler.startThread();
     }
     
     @Override
@@ -79,6 +77,25 @@ public class GameActivity extends Activity {
         
         mCourt = new Court(new ScoreUpdatedHandler());
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean solo = prefs.getBoolean("play_solo", true);
+        if (solo) {
+            courtHandler = new SolitareCourtHandler(mCourt);
+        } else {
+            courtHandler = createMultiplayerHandler(prefs);
+        }
+        mCourt.setCourtHandler(courtHandler);
+        mScoreView = (TextView) findViewById(R.id.score);
+
+        mCanvasView = (CanvasSurfaceView) findViewById(R.id.surface);
+        mCanvasView.setOnKeyListener(new GameKeyListener());
+        mCanvasView.setOnTouchListener(new GameTouchListener());
+        mCanvasView.setRenderer(new GameRenderer(this));
+        mCanvasView.setEvent(new GameUpdater());
+        mCanvasView.setKeepScreenOn(true);
+        new TiltListener(this);
+    }
+    
+    private CourtEventHandler createMultiplayerHandler(SharedPreferences prefs) {
         String ball = prefs.getString("ballid", null);
         if (ball == null) {
             Toast.makeText(this, "Configure ball in preferences", Toast.LENGTH_LONG);
@@ -92,37 +109,9 @@ public class GameActivity extends Activity {
         final String playername = prefs.getString("playername", null);
         if (playername == null) {
             Toast.makeText(this, "You must enter your playername in the preferences", Toast.LENGTH_LONG);
-            return;
+            return null;
         }
-        restClient = new RESTClient(mCourt, serverurl, ball, playername);
-        mCourt.setCourtHandler(restClient);
-        mScoreView = (TextView) findViewById(R.id.score);
-
-        mCanvasView = (CanvasSurfaceView) findViewById(R.id.surface);
-        mCanvasView.setOnKeyListener(new GameKeyListener());
-        mCanvasView.setOnTouchListener(new GameTouchListener());
-        mCanvasView.setRenderer(new GameRenderer(this));
-        mCanvasView.setEvent(new GameUpdater());
-        mCanvasView.setKeepScreenOn(true);
-        new TiltListener(this);
-    }
-    
-    boolean keepPlayerAlive;
-
-    private void startKeepPlayerAlive() {
-        keepPlayerAlive = true;
-        new Thread() {
-            public void run() {
-                while (keepPlayerAlive) {
-                    restClient.flipPlayer();
-                    try {
-                        Thread.sleep(2000);
-                    } catch (InterruptedException e) {
-                        return;
-                    }
-                }
-            };
-        }.start();
+        return new RESTClient(mCourt, serverurl, ball, playername);
     }
 
     class GameTouchListener implements OnTouchListener {

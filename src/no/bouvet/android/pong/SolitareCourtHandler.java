@@ -16,5 +16,12 @@ public class SolitareCourtHandler implements CourtEventHandler {
     public void ballToOpponent(float x, float dx, float dy) {
         court.flipBallY();
     }
-    
+
+    public void startThread() {
+        court.dropRandomNewBall();
+    }
+
+    public void stopThread() {
+        // do nothing
+    }
 }
